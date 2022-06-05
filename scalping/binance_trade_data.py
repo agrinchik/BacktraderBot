@@ -9,7 +9,7 @@ import os
 from ccxt.base.errors import NetworkError, ExchangeError
 from functools import wraps
 
-USE_DELTA_SIGN = False
+USE_RELATIVE_DELTAS = True
 
 EXCHANGE_STR = "binance"
 API_LIMIT = 1000
@@ -17,6 +17,13 @@ API_LIMIT = 1000
 SMA_1_LEN = 3
 SMA_2_LEN = 20
 SMA_3_LEN = 40
+
+COIN_DELTA1_LEN = 5
+COIN_DELTA2_LEN = 15
+COIN_DELTA3_LEN = 60
+BTC_DELTA1_LEN = 5
+BTC_DELTA2_LEN = 15
+BTC_DELTA3_LEN = 60
 
 DELTAS_ROUNDING_PRECISION = 0.01
 
@@ -55,8 +62,8 @@ def parse_args():
 
 class BinanceTradeDataDownloader(object):
     def __init__(self):
-        self.deltas_cache = {60: 0, 15: 0, 5: 0}
-        self.btc_deltas_cache = {60: 0, 15: 0, 5: 0}
+        self.deltas_cache = {COIN_DELTA3_LEN: 0, COIN_DELTA2_LEN: 0, COIN_DELTA1_LEN: 0}
+        self.btc_deltas_cache = {BTC_DELTA3_LEN: 0, BTC_DELTA2_LEN: 0, BTC_DELTA1_LEN: 0}
         self.w_exchange = None
         self.s_exchange = None
 
@@ -166,8 +173,10 @@ class BinanceTradeDataDownloader(object):
         ci = index
 
         c_price = end_price
-        while ct >= timestamp_start:
+        while ct > timestamp_start:
             ci = ci - 1
+            if ci < 0:
+                raise Exception("ci={}, ci cannot be < 0".format(ci))
             ct = arr[ci]["timestamp"]
             c_price = arr[ci]["price"]
             if c_price > max_v:
@@ -175,12 +184,10 @@ class BinanceTradeDataDownloader(object):
             if c_price < min_v:
                 min_v = c_price
 
-        if USE_DELTA_SIGN:
-            delta_sign = 1 if c_price <= end_price else -1
+        if USE_RELATIVE_DELTAS:
+            return 100 * (end_price - c_price) / c_price
         else:
-            delta_sign = 1
-
-        return delta_sign * 100 * (max_v - min_v) / min_v
+            return 100 * (max_v - min_v) / min_v
 
     def calculate_btc_delta_pct(self, btc_df, btc_timestamp_start, btc_timestamp_end):
         btc_delta_rows_df = btc_df.loc[(btc_df.index >= btc_timestamp_start) & (btc_df.index < btc_timestamp_end)]
@@ -191,25 +198,26 @@ class BinanceTradeDataDownloader(object):
         first_row = btc_delta_rows_df.head(1)
         first_low = first_row["Low"].values[0]
         first_high = first_row["High"].values[0]
+        first_hl2 = (first_low + first_high) / 2
         min_v = first_low
         max_v = first_high
 
         c_low = first_low
         c_high = first_high
+        c_hl2 = (c_low + c_high) / 2
         for index, row in btc_delta_rows_df.iterrows():
             c_low = row["Low"]
             c_high = row["High"]
+            c_hl2 = (c_low + c_high) / 2
             if c_high > max_v:
                 max_v = c_high
             if c_low < min_v:
                 min_v = c_low
 
-        if USE_DELTA_SIGN:
-            delta_sign = -1 if c_low < first_low and c_high < first_high else 1
+        if USE_RELATIVE_DELTAS:
+            return 100 * (c_hl2 - first_hl2) / first_hl2
         else:
-            delta_sign = 1
-
-        return delta_sign * 100 * (max_v - min_v) / min_v
+            return 100 * (max_v - min_v) / min_v
 
     def get_instrument_delta(self, arr, index, delta_minutes):
         timestamp0 = arr[0]["timestamp"]
@@ -309,7 +317,7 @@ class BinanceTradeDataDownloader(object):
         output_path = self.get_tick_data_filepath(dirname, symbol_out, is_future)
         os.makedirs(output_path, exist_ok=True)
 
-        gmt3_tz = pytz.timezone('Etc/GMT-2')
+        gmt3_tz = pytz.timezone('Etc/GMT-3')
         start_utc_date = datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
         start_utc_date = gmt3_tz.localize(start_utc_date, is_dst=True)
         start = int(start_utc_date.timestamp()) * 1000
@@ -328,7 +336,7 @@ class BinanceTradeDataDownloader(object):
         btc_1m_ohlc_df = self.get_btc_ohlcv_data(start, end)
 
         while timestamp <= end and timestamp != last_timestamp:
-            print("Requesting {} {}: {} GMT+02:00".format("Future" if is_future else "Spot", symbol_out, datetime.fromtimestamp(int(timestamp/1000)).strftime("%Y-%m-%dT%H:%M:%S")))
+            print("Requesting {} {}: {} GMT+03:00".format("Future" if is_future else "Spot", symbol_out, datetime.fromtimestamp(int(timestamp/1000)).strftime("%Y-%m-%dT%H:%M:%S")))
             options = {'startTime': timestamp, 'limit': API_LIMIT}
             if not is_future:
                 options = {'startTime': timestamp, 'endTime': timestamp + 3600000}
@@ -346,7 +354,8 @@ class BinanceTradeDataDownloader(object):
 
         print("Downloaded {} records!\n".format(len(data)))
 
-        header = ['ID', 'Timestamp', 'Trade ID', 'Datetime', 'Side', 'Price', 'Amount', 'isBuyerMaker', 'SMA{}'.format(SMA_1_LEN), 'SMA{}'.format(SMA_2_LEN), 'SMA{}'.format(SMA_3_LEN), 'd5m', 'd15m', 'd1H', 'dBTC5m', 'dBTC15m', 'dBTC1H']
+        header = ['ID', 'Timestamp', 'Trade ID', 'Datetime', 'Side', 'Price', 'Amount', 'isBuyerMaker', 'SMA{}'.format(SMA_1_LEN), 'SMA{}'.format(SMA_2_LEN), 'SMA{}'.format(SMA_3_LEN),
+                  'd{}m'.format(COIN_DELTA1_LEN), 'd{}m'.format(COIN_DELTA2_LEN), 'd{}m'.format(COIN_DELTA3_LEN), 'dBTC{}m'.format(BTC_DELTA1_LEN), 'dBTC{}m'.format(BTC_DELTA2_LEN), 'dBTC{}m'.format(BTC_DELTA3_LEN)]
         csv_rows = []
 
         for index, data_row in enumerate(data):
@@ -354,13 +363,13 @@ class BinanceTradeDataDownloader(object):
             sma2 = self.sma(data, index, SMA_2_LEN)
             sma3 = self.sma(data, index, SMA_3_LEN)
 
-            d5m  = self.get_instrument_delta(data, index, 5)
-            d15m = self.get_instrument_delta(data, index, 15)
-            d1h  = self.get_instrument_delta(data, index, 60)
+            d1 = self.get_instrument_delta(data, index, COIN_DELTA1_LEN)
+            d2 = self.get_instrument_delta(data, index, COIN_DELTA2_LEN)
+            d3 = self.get_instrument_delta(data, index, COIN_DELTA3_LEN)
 
-            dBTC5m  = self.get_btc_delta(data, index, btc_1m_ohlc_df, 5)
-            dBTC15m = self.get_btc_delta(data, index, btc_1m_ohlc_df, 15)
-            dBTC1h  = self.get_btc_delta(data, index, btc_1m_ohlc_df, 60)
+            btc_d1 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA1_LEN)
+            btc_d2 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA2_LEN)
+            btc_d3 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA3_LEN)
 
             csv_rows.append([   index,
                                 data_row["timestamp"],
@@ -373,12 +382,12 @@ class BinanceTradeDataDownloader(object):
                                 self.fmt_float(round(sma1, 8)),
                                 self.fmt_float(round(sma2, 8)),
                                 self.fmt_float(round(sma3, 8)),
-                                self.round_precision(d5m,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(d15m, DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(d1h,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(dBTC5m,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(dBTC15m, DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(dBTC1h,  DELTAS_ROUNDING_PRECISION),
+                                self.round_precision(d1,  DELTAS_ROUNDING_PRECISION),
+                                self.round_precision(d2,  DELTAS_ROUNDING_PRECISION),
+                                self.round_precision(d3,  DELTAS_ROUNDING_PRECISION),
+                                self.round_precision(btc_d1,  DELTAS_ROUNDING_PRECISION),
+                                self.round_precision(btc_d2,  DELTAS_ROUNDING_PRECISION),
+                                self.round_precision(btc_d3,  DELTAS_ROUNDING_PRECISION),
                              ])
 
         # Save it

@@ -14,7 +14,7 @@ ALLOW_SHORT_SHOTS_FLAG = True
 
 SHOT_DEPTH_SPOT_MIN_THRESHOLD_PCT_US_MODE = 0.3
 SHOT_DEPTH_FUTURE_MIN_THRESHOLD_PCT_US_MODE = 0.2
-SHOT_DEPTH_MIN_THRESHOLD_PCT = 0.4
+SHOT_DEPTH_MIN_THRESHOLD_PCT = 0.8
 
 SHOT_ROUNDING_PRECISION = 0.01
 
@@ -34,7 +34,7 @@ MULTIPLE_SHOTS_COMBINE_INTERVAL_MSEC = 7500
 class Shot(object):
     def __init__(self, symbol_name, is_multishot, start_timestamp, end_timestamp, start_datetime, end_datetime, shot_trades_num, shot_type,
                        start_price, end_price, shot_duration, shot_depth, diff_with_preshot, shot_bounce, shot_bounce_ratio, shot_bounce_datetime, real_shot_depth,
-                       d5m, d15m, d1H, dBTC5m, dBTC15m, dBTC1H):
+                       d5m, d15m, d60m, dBTC5m, dBTC15m, dBTC60m):
         self.symbol_name = symbol_name
         self.is_multishot = is_multishot
         self.start_timestamp = start_timestamp
@@ -54,10 +54,10 @@ class Shot(object):
         self.real_shot_depth = real_shot_depth
         self.d5m = d5m
         self.d15m = d15m
-        self.d1H = d1H
+        self.d60m = d60m
         self.dBTC5m = dBTC5m
         self.dBTC15m = dBTC15m
-        self.dBTC1H = dBTC1H
+        self.dBTC60m = dBTC60m
 
 
 class ShotBounceInfo(object):
@@ -281,10 +281,10 @@ class ShotsDetector(object):
                                             self.round_precision(real_shot_depth, SHOT_ROUNDING_PRECISION),
                                             first_trade["d5m"].values[0],
                                             first_trade["d15m"].values[0],
-                                            first_trade["d1H"].values[0],
+                                            first_trade["d60m"].values[0],
                                             first_trade["dBTC5m"].values[0],
                                             first_trade["dBTC15m"].values[0],
-                                            first_trade["dBTC1H"].values[0]
+                                            first_trade["dBTC60m"].values[0]
                                             )
                                 last_shot = shot
                                 shots_list.append(shot)
@@ -356,10 +356,10 @@ class ShotsDetector(object):
                                              real_shot_depth=shot_depth_pct,
                                              d5m=c_shot.d5m,
                                              d15m=c_shot.d15m,
-                                             d1H=c_shot.d1H,
+                                             d60m=c_shot.d60m,
                                              dBTC5m=c_shot.dBTC5m,
                                              dBTC15m=c_shot.dBTC15m,
-                                             dBTC1H=c_shot.dBTC1H
+                                             dBTC60m=c_shot.dBTC60m
                                             )
                         shots_list_result.append(new_multishot)
                         ci = cj + 1
@@ -380,7 +380,7 @@ class ShotsDetector(object):
 
         header = ['symbol_name', 'is_multishot', 'start_timestamp', 'end_timestamp', 'start_datetime', 'end_datetime', 'shot_trades_num',
                   'shot_type', 'start_price', 'end_price', 'shot_duration', 'shot_depth', 'diff_with_preshot',
-                  'shot_bounce', 'shot_bounce_ratio', 'shot_bounce_datetime', 'real_shot_depth', 'd5m', 'd15m', 'd1H', 'dBTC5m', 'dBTC15m', 'dBTC1H']
+                  'shot_bounce', 'shot_bounce_ratio', 'shot_bounce_datetime', 'real_shot_depth', 'd5m', 'd15m', 'd60m', 'dBTC5m', 'dBTC15m', 'dBTC60m']
         csv_rows = []
         for shot in shots_list:
             csv_rows.append([
@@ -403,10 +403,10 @@ class ShotsDetector(object):
                                 shot.real_shot_depth,
                                 shot.d5m,
                                 shot.d15m,
-                                shot.d1H,
+                                shot.d60m,
                                 shot.dBTC5m,
                                 shot.dBTC15m,
-                                shot.dBTC1H
+                                shot.dBTC60m
                              ])
 
         # Save it

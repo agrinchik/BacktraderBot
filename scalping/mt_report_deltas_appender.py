@@ -4,7 +4,7 @@ import glob
 from datetime import timedelta
 from scalping.binance_trade_data import BinanceTradeDataDownloader
 
-SERVER_TO_LOCAL_TZ_ADJUST_TIMEDELTA = timedelta(hours=2)
+SERVER_TO_LOCAL_TZ_ADJUST_TIMEDELTA = timedelta(hours=3)
 
 TRADES_DOWNLOAD_START_DELTA = timedelta(minutes=90)
 TRADES_DOWNLOAD_END_DELTA = timedelta(minutes=5)
@@ -17,10 +17,10 @@ TRADE_LOOKUP_WINDOW_SEC = 5
 
 HEADER_COIN_DELTA_1 = 'd5m'
 HEADER_COIN_DELTA_2 = 'd15m'
-HEADER_COIN_DELTA_3 = 'd1H'
+HEADER_COIN_DELTA_3 = 'd60m'
 HEADER_BTC_DELTA_1 = 'dBTC5m'
 HEADER_BTC_DELTA_2 = 'dBTC15m'
-HEADER_BTC_DELTA_3 = 'dBTC1H'
+HEADER_BTC_DELTA_3 = 'dBTC60m'
 
 
 class MTReportDeltaAppender(object):
@@ -53,18 +53,16 @@ class MTReportDeltaAppender(object):
         except:
             print("!!! Error during opening {} file.".format(trades_filename))
 
-    def get_datetime_local_tz(self, row):
+    def get_datetime_local_tz(self, row, column_name):
         if isinstance(row, pd.DataFrame):
-            return pd.to_datetime(row["entry_timestamp"].values[0]) + SERVER_TO_LOCAL_TZ_ADJUST_TIMEDELTA
+            return pd.to_datetime(row[column_name].values[0]) + SERVER_TO_LOCAL_TZ_ADJUST_TIMEDELTA
         elif isinstance(row, pd.Series):
-            return pd.to_datetime(row["entry_timestamp"]) + SERVER_TO_LOCAL_TZ_ADJUST_TIMEDELTA
+            return pd.to_datetime(row[column_name]) + SERVER_TO_LOCAL_TZ_ADJUST_TIMEDELTA
 
     def get_download_daterange(self, trades_data_df, symbol):
         symbol_df = trades_data_df[trades_data_df['symbol'] == symbol]
-        first_row_dt = self.get_datetime_local_tz(symbol_df.head(1))
-        last_row_dt = self.get_datetime_local_tz(symbol_df.tail(1))
-        start_datetime = first_row_dt - TRADES_DOWNLOAD_START_DELTA
-        end_datetime = last_row_dt + TRADES_DOWNLOAD_END_DELTA
+        start_datetime = self.get_datetime_local_tz(symbol_df.head(1), "entry_timestamp") - TRADES_DOWNLOAD_START_DELTA
+        end_datetime = self.get_datetime_local_tz(symbol_df.tail(1), "close_timestamp") + TRADES_DOWNLOAD_END_DELTA
         start_datetime_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         end_datetime_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         return {"start": start_datetime_str, "end": end_datetime_str}

@@ -6,7 +6,7 @@ import fdb
 import datetime as dt
 
 DEFAULT_WORKING_PATH = "c:/Python/Scalping"
-FDB_REPORT_FILENAME = "c:/MoonTrader/data/mt-core/mtdb022.fdb"
+FDB_REPORT_FILENAME = "c:/MoonTrader/data/mt-core/mtdb023.fdb"
 
 MAX_SLIPPAGE_PCT = 50
 
@@ -20,9 +20,9 @@ WL_FLAG_CRIT1_SYMBOL_WIN_RATE_PCT = 80
 
 REPORT_GEN_MODE_ALL = (0, "[All]")
 
-IS_PRINT_ALL_TRADES_FLAG = True
+REPORT_NAME_ALL_COMBINED = "All-Combined"
 
-DEFAULT_LEVERAGE = 5
+IS_PRINT_ALL_TRADES_FLAG = True
 
 
 class MTReportAnalyzer(object):
@@ -67,6 +67,7 @@ class MTReportAnalyzer(object):
 
             cur = conn.cursor()
             SELECT = """ SELECT 
+                        rd.REPORT_OPEN_TIMESTAMP,
                         rd.REPORT_TIMESTAMP,
                         UPPER(rd.SYMBOL),
                         (SELECT 
@@ -105,7 +106,7 @@ class MTReportAnalyzer(object):
             cur.execute(SELECT)
 
             data = cur.fetchall()
-            df = pd.DataFrame(data, columns=["entry_timestamp", "symbol", "market_type", "avg_entry_price", "avg_exit_price", "qty", "executed_qty", "side", "profit", "pnl_pct", "fees_usdt", "pnl_usdt", "volume_usdt", "net_pnl_usdt", "strategy_id"])
+            df = pd.DataFrame(data, columns=["entry_timestamp", "close_timestamp", "symbol", "market_type", "avg_entry_price", "avg_exit_price", "qty", "executed_qty", "side", "profit", "pnl_pct", "fees_usdt", "pnl_usdt", "volume_usdt", "net_pnl_usdt", "strategy_id"])
             df = df.fillna(0)
             for i in range(len(df)):
                 strat_id = df['strategy_id'].values[i]
@@ -381,28 +382,33 @@ class MTReportAnalyzer(object):
         return df['volume_usdt'].mean()
 
     def get_deposit_size(self, df):
-        return self.get_avg_order_size(df) / DEFAULT_LEVERAGE
+        return self.get_avg_order_size(df)
 
     def get_report_strategies_list(self, df):
         s_list = df['strategy_id'].unique()
         s_list.sort()
         return list(s_list)
 
-    def generate_report(self, df, report_gen_mode):
+    def generate_reports(self, df, report_gen_mode):
         if report_gen_mode == REPORT_GEN_MODE_ALL:
             report_df = df
         else:
             raise Exception("Wrong report_gen_mode value provided: {}".format(report_gen_mode))
         if len(report_df) > 0:
             print("Processing {} mode ...".format(report_gen_mode[1]))
+            self.generate_report(report_df, report_gen_mode, REPORT_NAME_ALL_COMBINED)
+
             strategies_list = self.get_report_strategies_list(report_df)
             for strategy_id in strategies_list:
                 strat_df = report_df.loc[report_df['strategy_id'] == strategy_id]
-                self.create_model(strat_df)
-                stats_report_rows = self.compile_stats_report(strategy_id, self._total_stats_dict, report_gen_mode)
-                self.write_analysis_report(stats_report_rows, report_gen_mode, strategy_id)
+                self.generate_report(strat_df, report_gen_mode, strategy_id)
         else:
             print("There is no data to process {} mode!".format(report_gen_mode[1]))
+
+    def generate_report(self, df, report_gen_mode, strategy_id):
+        self.create_model(df)
+        stats_report_rows = self.compile_stats_report(strategy_id, self._total_stats_dict, report_gen_mode)
+        self.write_analysis_report(stats_report_rows, report_gen_mode, strategy_id)
 
     def run(self):
         random.seed()
@@ -414,7 +420,7 @@ class MTReportAnalyzer(object):
             print("*** No report data found! Quitting.")
             exit(-1)
 
-        self.generate_report(report_data_df, REPORT_GEN_MODE_ALL)
+        self.generate_reports(report_data_df, REPORT_GEN_MODE_ALL)
 
 
 def main():
