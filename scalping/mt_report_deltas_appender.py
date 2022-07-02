@@ -15,12 +15,25 @@ ALL_TRADES_DELTAS_FILENAME = "all-trades-deltas.xlsx"
 
 TRADE_LOOKUP_WINDOW_SEC = 5
 
-HEADER_COIN_DELTA_1 = 'd5m'
-HEADER_COIN_DELTA_2 = 'd15m'
-HEADER_COIN_DELTA_3 = 'd60m'
-HEADER_BTC_DELTA_1 = 'dBTC5m'
-HEADER_BTC_DELTA_2 = 'dBTC15m'
-HEADER_BTC_DELTA_3 = 'dBTC60m'
+FIELD_COIN_DELTA_1 = 'd5m'
+FIELD_COIN_DELTA_2 = 'd15m'
+FIELD_COIN_DELTA_3 = 'd60m'
+FIELD_BTC_DELTA_1  = 'dBTC5m'
+FIELD_BTC_DELTA_2  = 'dBTC15m'
+FIELD_BTC_DELTA_3  = 'dBTC60m'
+
+HEADER_OPEN_COIN_DELTA_1  = "Open:{}".format(FIELD_COIN_DELTA_1)
+HEADER_OPEN_COIN_DELTA_2  = "Open:{}".format(FIELD_COIN_DELTA_2)
+HEADER_OPEN_COIN_DELTA_3  = "Open:{}".format(FIELD_COIN_DELTA_3)
+HEADER_OPEN_BTC_DELTA_1   = "Open:{}".format(FIELD_BTC_DELTA_1)
+HEADER_OPEN_BTC_DELTA_2   = "Open:{}".format(FIELD_BTC_DELTA_2)
+HEADER_OPEN_BTC_DELTA_3   = "Open:{}".format(FIELD_BTC_DELTA_3)
+HEADER_CLOSE_COIN_DELTA_1 = "Close:{}".format(FIELD_COIN_DELTA_1)
+HEADER_CLOSE_COIN_DELTA_2 = "Close:{}".format(FIELD_COIN_DELTA_2)
+HEADER_CLOSE_COIN_DELTA_3 = "Close:{}".format(FIELD_COIN_DELTA_3)
+HEADER_CLOSE_BTC_DELTA_1  = "Close:{}".format(FIELD_BTC_DELTA_1)
+HEADER_CLOSE_BTC_DELTA_2  = "Close:{}".format(FIELD_BTC_DELTA_2)
+HEADER_CLOSE_BTC_DELTA_3  = "Close:{}".format(FIELD_BTC_DELTA_3)
 
 
 class MTReportDeltaAppender(object):
@@ -75,25 +88,41 @@ class MTReportDeltaAppender(object):
         tick_data_df = pd.read_csv(tick_data_filename).set_index('Timestamp')
 
         for index, row in trades_symbol_df.iterrows():
-            trade_datetime = pd.to_datetime(row["entry_timestamp"])
-            trade_timestamp_start_msec = int(trade_datetime.timestamp() * 1000)
-            trade_timestamp_end_msec = int(trade_timestamp_start_msec + TRADE_LOOKUP_WINDOW_SEC * 1000)
-            ticks_df = tick_data_df.loc[(tick_data_df.index >= trade_timestamp_start_msec) & (tick_data_df.index <= trade_timestamp_end_msec)]
-            if len(ticks_df) > 0:
-                tick_row = ticks_df.head(1).iloc[0]
-                cond = (trades_data_df["entry_timestamp"] == row["entry_timestamp"]) & (trades_data_df["symbol"] == symbol)
-                trades_data_df.loc[cond, HEADER_COIN_DELTA_1] = tick_row[HEADER_COIN_DELTA_1]
-                trades_data_df.loc[cond, HEADER_COIN_DELTA_2] = tick_row[HEADER_COIN_DELTA_2]
-                trades_data_df.loc[cond, HEADER_COIN_DELTA_3] = tick_row[HEADER_COIN_DELTA_3]
-                trades_data_df.loc[cond, HEADER_BTC_DELTA_1] = tick_row[HEADER_BTC_DELTA_1]
-                trades_data_df.loc[cond, HEADER_BTC_DELTA_2] = tick_row[HEADER_BTC_DELTA_2]
-                trades_data_df.loc[cond, HEADER_BTC_DELTA_3] = tick_row[HEADER_BTC_DELTA_3]
+            open_trade_datetime = pd.to_datetime(row["entry_timestamp"])
+            open_trade_timestamp_start_msec = int(open_trade_datetime.timestamp() * 1000)
+            open_trade_timestamp_end_msec = int(open_trade_timestamp_start_msec + TRADE_LOOKUP_WINDOW_SEC * 1000)
+            open_ticks_df = tick_data_df.loc[(tick_data_df.index >= open_trade_timestamp_start_msec) & (tick_data_df.index <= open_trade_timestamp_end_msec)]
+            if len(open_ticks_df) > 0:
+                tick_row = open_ticks_df.head(1).iloc[0]
+                open_cond = (trades_data_df["entry_timestamp"] == row["entry_timestamp"]) & (trades_data_df["symbol"] == symbol)
+                trades_data_df.loc[open_cond, HEADER_OPEN_COIN_DELTA_1] = tick_row[FIELD_COIN_DELTA_1]
+                trades_data_df.loc[open_cond, HEADER_OPEN_COIN_DELTA_2] = tick_row[FIELD_COIN_DELTA_2]
+                trades_data_df.loc[open_cond, HEADER_OPEN_COIN_DELTA_3] = tick_row[FIELD_COIN_DELTA_3]
+                trades_data_df.loc[open_cond, HEADER_OPEN_BTC_DELTA_1]  = tick_row[FIELD_BTC_DELTA_1]
+                trades_data_df.loc[open_cond, HEADER_OPEN_BTC_DELTA_2]  = tick_row[FIELD_BTC_DELTA_2]
+                trades_data_df.loc[open_cond, HEADER_OPEN_BTC_DELTA_3]  = tick_row[FIELD_BTC_DELTA_3]
+
+            close_trade_datetime = pd.to_datetime(row["close_timestamp"])
+            close_trade_timestamp_start_msec = int(close_trade_datetime.timestamp() * 1000)
+            close_trade_timestamp_end_msec = int(close_trade_timestamp_start_msec + TRADE_LOOKUP_WINDOW_SEC * 1000)
+            close_ticks_df = tick_data_df.loc[(tick_data_df.index >= close_trade_timestamp_start_msec) & (tick_data_df.index <= close_trade_timestamp_end_msec)]
+            if len(close_ticks_df) > 0:
+                tick_row = close_ticks_df.head(1).iloc[0]
+                close_cond = (trades_data_df["close_timestamp"] == row["close_timestamp"]) & (trades_data_df["symbol"] == symbol)
+                trades_data_df.loc[close_cond, HEADER_CLOSE_COIN_DELTA_1] = tick_row[FIELD_COIN_DELTA_1]
+                trades_data_df.loc[close_cond, HEADER_CLOSE_COIN_DELTA_2] = tick_row[FIELD_COIN_DELTA_2]
+                trades_data_df.loc[close_cond, HEADER_CLOSE_COIN_DELTA_3] = tick_row[FIELD_COIN_DELTA_3]
+                trades_data_df.loc[close_cond, HEADER_CLOSE_BTC_DELTA_1]  = tick_row[FIELD_BTC_DELTA_1]
+                trades_data_df.loc[close_cond, HEADER_CLOSE_BTC_DELTA_2]  = tick_row[FIELD_BTC_DELTA_2]
+                trades_data_df.loc[close_cond, HEADER_CLOSE_BTC_DELTA_3]  = tick_row[FIELD_BTC_DELTA_3]
 
         return trades_data_df
 
     def add_deltas_columns(self, df):
-        df_new = df.assign(c1=0, c2=0, c3=0, b1=0, b2=0, b3=0)
-        df_new.rename(columns={"c1": HEADER_COIN_DELTA_1, "c2": HEADER_COIN_DELTA_2, "c3": HEADER_COIN_DELTA_3, "b1": HEADER_BTC_DELTA_1, "b2": HEADER_BTC_DELTA_2, "b3": HEADER_BTC_DELTA_3}, inplace=True)
+        df_new = df.assign(oc1=0, oc2=0, oc3=0, ob1=0, ob2=0, ob3=0, cc1=0, cc2=0, cc3=0, cb1=0, cb2=0, cb3=0)
+        df_new.rename(columns={"oc1": HEADER_OPEN_COIN_DELTA_1, "oc2": HEADER_OPEN_COIN_DELTA_2, "oc3": HEADER_OPEN_COIN_DELTA_3, "ob1": HEADER_OPEN_BTC_DELTA_1, "ob2": HEADER_OPEN_BTC_DELTA_2, "ob3": HEADER_OPEN_BTC_DELTA_3,
+                               "cc1": HEADER_CLOSE_COIN_DELTA_1, "cc2": HEADER_CLOSE_COIN_DELTA_2, "cc3": HEADER_CLOSE_COIN_DELTA_3, "cb1": HEADER_CLOSE_BTC_DELTA_1, "cb2": HEADER_CLOSE_BTC_DELTA_2, "cb3": HEADER_CLOSE_BTC_DELTA_3
+                               }, inplace=True)
         return df_new
 
     def run(self, is_future):
