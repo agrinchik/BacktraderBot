@@ -1,5 +1,6 @@
     {
       "id": {{TOKEN001}},
+      "groupID": 1649744031489,
       "name": "Shots Group",
       "description": null,
       "info": "{{TOKEN002}}",
@@ -44,6 +45,32 @@
             "tooltip": null,
             "onOffByArgument": "autoRestart",
             "callbackInfo": null
+          },
+          "maxActiveMarkets": {
+            "name": "maxActiveMarkets",
+            "value": 10,
+            "argumentType": 2,
+            "group": 1,
+            "subGroup": 0,
+            "order": 5,
+            "label": "mt-algo-max-active-markets-lbl",
+            "inputLabel": null,
+            "tooltip": null,
+            "onOffByArgument": null,
+            "callbackInfo": null
+          },
+          "isEmulated": {
+            "name": "isEmulated",
+            "value": false,
+            "argumentType": 11,
+            "group": 1,
+            "subGroup": 10,
+            "order": 6,
+            "label": "mt-algo-emulation-lbl",
+            "inputLabel": null,
+            "tooltip": null,
+            "onOffByArgument": null,
+            "callbackInfo": "OnEmulationChange, isEmulated"
           },
           "group5": {
             "name": "group5",
@@ -108,12 +135,12 @@
             "inputLabel": null,
             "tooltip": null,
             "onOffByArgument": null,
-            "callbackInfo": null
+            "callbackInfo": "OnMarketTypeChange, marketType, useQuantitiveRules, useMarkPriceFilter, markPriceFilter"
           },
           "quoteAssets": {
             "name": "quoteAssets",
             "value": "",
-            "argumentType": 15,
+            "argumentType": 25,
             "group": 10,
             "subGroup": 0,
             "order": 3,
@@ -139,7 +166,7 @@
           "blackList": {
             "name": "blackList",
             "value": "",
-            "argumentType": 15,
+            "argumentType": 24,
             "group": 10,
             "subGroup": 0,
             "order": 5,
@@ -149,46 +176,106 @@
             "onOffByArgument": null,
             "callbackInfo": null
           },
-          "useCoinDelta": {
-            "name": "useCoinDelta",
-            "value": false,
-            "argumentType": 11,
-            "group": 20,
+          "deltaCheckPeriod": {
+            "name": "deltaCheckPeriod",
+            "value": 3.0,
+            "argumentType": 4,
+            "group": 10,
             "subGroup": 0,
-            "order": 0,
-            "label": "mt-algo-coin-delta-filter-lbl",
-            "inputLabel": null,
-            "tooltip": "mt-algo-coin-delta-group-tt",
+            "order": 6,
+            "label": "mt-algo-delta-check-period-lbl",
+            "inputLabel": "s",
+            "tooltip": null,
             "onOffByArgument": null,
             "callbackInfo": null
           },
-          "coinDeltaTimeframe": {
-            "name": "coinDeltaTimeframe",
-            "value": 3600,
-            "argumentType": 17,
-            "group": 20,
+          "useQuantitiveRules": {
+            "name": "useQuantitiveRules",
+            "value": false,
+            "argumentType": 11,
+            "group": 10,
             "subGroup": 0,
-            "order": 1,
-            "label": "mt-algo-timeframe-lbl",
+            "order": 7,
+            "label": "mt-algo-quantitive-rules-lbl",
             "inputLabel": null,
-            "tooltip": null,
-            "onOffByArgument": "useCoinDelta",
+            "tooltip": "mt-algo-quantitive-rules-tt",
+            "onOffByArgument": null,
             "callbackInfo": null
           },
-          "coinMinMaxDelta": {
-            "name": "coinMinMaxDelta",
+          "usePriceStepFilter": {
+            "name": "usePriceStepFilter",
+            "value": false,
+            "argumentType": 11,
+            "group": 13,
+            "subGroup": 0,
+            "order": 0,
+            "label": "mt-algo-price-step-filter-lbl",
+            "inputLabel": null,
+            "tooltip": "mt-algo-price-step-filter-tt",
+            "onOffByArgument": null,
+            "callbackInfo": null
+          },
+          "priceStepFilter": {
+            "name": "priceStepFilter",
             "value": {
-              "min": 0,
-              "max": 999
+              "min": 0.0,
+              "max": 0.25
             },
             "argumentType": 18,
-            "group": 20,
+            "group": 13,
             "subGroup": 0,
-            "order": 4,
+            "order": 1,
             "label": "mt-algo-range-lbl",
+            "inputLabel": null,
+            "tooltip": null,
+            "onOffByArgument": "useQAV24",
+            "callbackInfo": null
+          },
+          "useMarkPriceFilter": {
+            "name": "useMarkPriceFilter",
+            "value": false,
+            "argumentType": 11,
+            "group": 15,
+            "subGroup": 0,
+            "order": 5,
+            "label": "mt-use-mark-price-filter-lbl",
+            "inputLabel": null,
+            "tooltip": "mt-algo-mark-price-filter-tt",
+            "onOffByArgument": null,
+            "callbackInfo": null
+          },
+          "markPriceFilter": {
+            "name": "markPriceFilter",
+            "value": {
+              "min": -0.5,
+              "max": 0.5
+            },
+            "argumentType": 18,
+            "group": 15,
+            "subGroup": 0,
+            "order": 6,
+            "label": "mt-mark-price-filter-lbl",
             "inputLabel": "%",
             "tooltip": null,
-            "onOffByArgument": "useCoinDelta",
+            "onOffByArgument": null,
+            "callbackInfo": null
+          },
+          "coinDeltaFilterList": {
+            "name": "coinDeltaFilterList",
+            "value": {
+              "isEnabled": false,
+              "isCoinBased": true,
+              "Values": [],
+              "Count": 0
+            },
+            "argumentType": 27,
+            "group": 20,
+            "subGroup": 0,
+            "order": 0,
+            "label": "mt-algo-coin-delta-filters-lbl",
+            "inputLabel": null,
+            "tooltip": "mt-algo-coin-delta-filters-tt",
+            "onOffByArgument": null,
             "callbackInfo": null
           },
           "useQAV24": {
@@ -207,7 +294,7 @@
           "qav24MinMax": {
             "name": "qav24MinMax",
             "value": {
-              "min": 10000000.0,
+              "min": 1000000.0,
               "max": 100200300400
             },
             "argumentType": 19,
@@ -220,46 +307,43 @@
             "onOffByArgument": "useQAV24",
             "callbackInfo": null
           },
-          "useBtcDelta": {
-            "name": "useBtcDelta",
-            "value": true,
-            "argumentType": 11,
+          "deltaFilterList": {
+            "name": "deltaFilterList",
+            "value": {
+              "isEnabled": true,
+              "isCoinBased": false,
+              "Values": [
+                {
+                  "symbol": "BTCUSDT",
+                  "timeFrame": 3600,
+                  "isDeltaRelative": false,
+                  "cancelIfOutOfRange": false,
+                  "range": {
+                    "min": 0.0,
+                    "max": 7.0
+                  }
+                },
+                {
+                  "symbol": "BTCUSDT",
+                  "timeFrame": 60,
+                  "isDeltaRelative": false,
+                  "cancelIfOutOfRange": false,
+                  "range": {
+                    "min": 0.0,
+                    "max": 0.5
+                  }
+                }
+              ],
+              "Count": 2
+            },
+            "argumentType": 27,
             "group": 40,
             "subGroup": 0,
             "order": 0,
-            "label": "mt-algo-btc-delta-filter-lbl",
+            "label": "mt-algo-delta-filters-lbl",
             "inputLabel": null,
-            "tooltip": "mt-algo-btc-delta-group-tt",
+            "tooltip": "mt-algo-delta-filters-tt",
             "onOffByArgument": null,
-            "callbackInfo": null
-          },
-          "btcDeltaTimeframe": {
-            "name": "btcDeltaTimeframe",
-            "value": 3600,
-            "argumentType": 17,
-            "group": 40,
-            "subGroup": 0,
-            "order": 1,
-            "label": "mt-algo-timeframe-lbl",
-            "inputLabel": null,
-            "tooltip": null,
-            "onOffByArgument": "useBtcDelta",
-            "callbackInfo": null
-          },
-          "btcMinMaxDelta": {
-            "name": "btcMinMaxDelta",
-            "value": {
-              "min": 0.0,
-              "max": 7.0
-            },
-            "argumentType": 18,
-            "group": 40,
-            "subGroup": 0,
-            "order": 4,
-            "label": "mt-algo-range-lbl",
-            "inputLabel": "%",
-            "tooltip": null,
-            "onOffByArgument": "useBtcDelta",
             "callbackInfo": null
           },
           "group50": {
@@ -446,7 +530,7 @@
           },
           "useAutoPriceDown": {
             "name": "useAutoPriceDown",
-            "value": false,
+            "value": true,
             "argumentType": 11,
             "group": 70,
             "subGroup": 10,
@@ -459,7 +543,7 @@
           },
           "autoPriceDownTimer": {
             "name": "autoPriceDownTimer",
-            "value": 0.0,
+            "value": 1.0,
             "argumentType": 4,
             "group": 70,
             "subGroup": 10,
@@ -472,7 +556,7 @@
           },
           "autoPriceDownStep": {
             "name": "autoPriceDownStep",
-            "value": 0.0,
+            "value": 0.2,
             "argumentType": 4,
             "group": 70,
             "subGroup": 10,
@@ -485,7 +569,7 @@
           },
           "autoPriceDownLimit": {
             "name": "autoPriceDownLimit",
-            "value": 0.0,
+            "value": 0.1,
             "argumentType": 4,
             "group": 70,
             "subGroup": 10,
@@ -524,7 +608,7 @@
           },
           "stopLossSpread": {
             "name": "stopLossSpread",
-            "value": 5.0,
+            "value": 10.0,
             "argumentType": 4,
             "group": 80,
             "subGroup": 0,
@@ -537,7 +621,7 @@
           },
           "stopLossDelay": {
             "name": "stopLossDelay",
-            "value": 0.0,
+            "value": 0.5,
             "argumentType": 4,
             "group": 80,
             "subGroup": 0,
@@ -602,7 +686,7 @@
           }
         }
       },
-      "argsJson": null,
       "isRunning": false,
-      "isProcessing": false
+      "isProcessing": false,
+      "isProfilingOn": false
     }

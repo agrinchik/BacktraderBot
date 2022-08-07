@@ -9,7 +9,7 @@ while read line; do
     symbol_list+=($line)
 done < symbols_spot_${1}.txt
 
-declare -a start_minutes_ago=$((8*60))
+declare -a start_minutes_ago=$((12*60))
 
 declare -a ultrashortmode=${2}
 

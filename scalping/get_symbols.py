@@ -9,8 +9,8 @@ SPOT_SYMBOL_INFO_URL = "https://api.binance.com/api/v1/exchangeInfo"
 FUTURE_VOLUME_INFO_URL = "https://fapi.binance.com/fapi/v1/ticker/24hr"
 SPOT_VOLUME_INFO_URL = "https://api.binance.com/api/v1/ticker/24hr"
 
-FUTURE_VOLUME_FILTER_USDT_VAL = 1000000
-SPOT_VOLUME_FILTER_USDT_VAL = 1000000
+FUTURE_VOLUME_FILTER_USDT_VAL = 100000
+SPOT_VOLUME_FILTER_USDT_VAL = 100000
 
 
 class GetSymbols(object):
