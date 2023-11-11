@@ -25,8 +25,8 @@ start_timestamp=$((now_timestamp - (now_timestamp % (3600 * 24)) - 3600 * 24 * s
 start_date="$(date -j -f "%s" "${start_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 end_date="$(date -j -f "%s" "${now_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 
-echo $start_date
-echo $end_date
+echo start_date=$start_date
+echo end_date=$end_date
 
 for symbol in "${arr_symbols[@]}"
 do
