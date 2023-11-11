@@ -69,9 +69,10 @@ class GenericStrategy(bt.Strategy):
         self.skip_bar_flow_control_flag = False
         self.capital_stoploss_fired_flow_control_flag = False
 
-        self.atr_tf = btind.AverageTrueRange(self.data, period=ATR_LENGTH, movav=btind.MovAv.SMA)
-        self.sma_tf = btind.SimpleMovingAverage(self.data.close, period=ATR_LENGTH)
-        self.atr_tf_pct = (self.atr_tf / self.sma_tf) * 100
+        if self.is_atr_mode():
+            self.atr_tf = btind.AverageTrueRange(self.data, period=ATR_LENGTH, movav=btind.MovAv.SMA)
+            self.sma_tf = btind.SimpleMovingAverage(self.data.close, period=ATR_LENGTH)
+            self.atr_tf_pct = (self.atr_tf / self.sma_tf) * 100
 
     def islivedata(self):
         return self.data.islive()

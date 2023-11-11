@@ -136,9 +136,9 @@ class EquityCurvePlotter(object):
         return df[ColumnName.EQUITY_CURVE_DATA_POINTS].values[0]
 
     def get_linear_regression_line_points(self, x_axis_data, equitycurveslope, equitycurveintercept, startcash):
-        x1 = x_axis_data[0]
+        x1 = x_axis_data[0] if len(x_axis_data) > 0 else 0
         y1 = startcash + equitycurveintercept
-        xn = x_axis_data[-1]
+        xn = x_axis_data[-1] if len(x_axis_data) > 0 else 0
         yn = startcash + equitycurveintercept + len(x_axis_data) * equitycurveslope
         return [[x1, xn], [y1, yn]]
 

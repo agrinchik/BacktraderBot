@@ -93,7 +93,7 @@ class CerebroRunner(object):
         self._batch_number += 1
         st = strat[0]
         st.strat_id = self._batch_number
-        print('!! Finished Batch Run={}'.format(self._batch_number))
+        print('{}: !!!! Finished Batch Run={}'.format(datetime.now().strftime("%H:%M:%S"), self._batch_number))
         self.print_debug_memory_stats()
 
     def run_strategies(self):
@@ -280,7 +280,7 @@ class Backtesting(object):
 
     def get_wfo_cycles(self, args):
         start_date = self.get_wfo_startdate(args)
-        return WFOHelper.get_wfo_cycles(start_date, 1, args.wfo_training_period, 15)
+        return WFOHelper.get_wfo_cycles(start_date, 1, args.wfo_training_period, 1)
 
     def validate_strategy_params(self, params_dict):
         try:
@@ -309,14 +309,19 @@ class Backtesting(object):
         print("Number of strategies: {}".format(len(StFetcher.COUNT())))
         self._cerebro.optstrategy(StFetcher, idx=StFetcher.COUNT())
 
+    def get_datetime_format_string(self, timeframe):
+        if "ms" in timeframe:
+            return '%Y-%m-%dT%H:%M:%S.%f'
+        else:
+            return '%Y-%m-%dT%H:%M:%S'
 
-    def check_market_data_csv_has_data(self, filename, wfo_cycle_info):
+    def check_market_data_csv_has_data(self, filename, wfo_cycle_info, timeframe):
         df = pd.read_csv(filename)
         fromdate = wfo_cycle_info.training_start_date
         todate = wfo_cycle_info.training_end_date
         for index, row in df.iterrows():
             timestamp_str = row['Timestamp']
-            timestamp = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S')
+            timestamp = datetime.strptime(timestamp_str, self.get_datetime_format_string(timeframe))
             if fromdate < timestamp and todate < timestamp:
                 print("!!! There is no market data for the start/end date range provided. Finishing execution.")
                 quit()
@@ -363,7 +368,7 @@ class Backtesting(object):
             todate=todate_beyond,
             timeframe=timeframe_id,
             compression=compression,
-            dtformat="%Y-%m-%dT%H:%M:%S",
+            dtformat=self.get_datetime_format_string(timeframe),
             # nullvalue=0.0,
             datetime=0,
             open=1,
@@ -497,7 +502,7 @@ class Backtesting(object):
 
         self._market_data_input_filename = self.get_input_filename(args)
 
-        self.check_market_data_csv_has_data(self._market_data_input_filename, curr_wfo_cycle_info)
+        self.check_market_data_csv_has_data(self._market_data_input_filename, curr_wfo_cycle_info, args.timeframe)
 
         self.add_datas(args, curr_wfo_cycle_info)
 

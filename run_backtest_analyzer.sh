@@ -3,8 +3,8 @@
 runid=$1
 declare -a fname="${runid}_Backtesting.csv"
 
-if [ -d "/opt/anaconda3" ]; then
-    source /opt/anaconda3/etc/profile.d/conda.sh
+if [ -d "/Users/alex/opt/anaconda3" ]; then
+    source /Users/alex/opt/anaconda3/etc/profile.d/conda.sh
 elif [ -d "/home/alex/anaconda3" ]; then
     source /home/alex/anaconda3/etc/profile.d/conda.sh
 elif [ -d "/Users/alex/anaconda3" ]; then

@@ -19,8 +19,10 @@ SS_FILTER_MIN_SHOTS_COUNT = 0
 
 ALLOW_SHORT_SHOTS_FLAG = True
 
-SPOT_MAKER_FEE_PCT = 0.075
-SPOT_TAKER_FEE_PCT = 0.075
+#SPOT_MAKER_FEE_PCT = 0.075
+#SPOT_TAKER_FEE_PCT = 0.075
+SPOT_MAKER_FEE_PCT = 0.02  # BUSD
+SPOT_TAKER_FEE_PCT = 0.02  # BUSD
 SPOT_FEES_PCT = SPOT_MAKER_FEE_PCT + SPOT_TAKER_FEE_PCT
 FUTURE_MAKER_FEE_PCT = 0.02
 FUTURE_TAKER_FEE_PCT = 0.04
@@ -33,27 +35,29 @@ MAX_PRACTICAL_DISTANCE = 3.0
 
 MIN_DISTANCE_PCT = 0.3
 MAX_DISTANCE_PCT = 3
-MIN_BUFFER_PCT = 0.2
-MAX_BUFFER_PCT = 0.4
+MIN_BUFFER_PCT = 0.3
+MAX_BUFFER_PCT = 0.8
+
+MB_MIN_ALLOWED_BUFFER_PCT = 0.3
+MB_MAX_ALLOWED_BUFFER_PCT = 0.8
 
 FUTURE_MIN_TP_PCT = 0.12
 FUTURE_MAX_TP_PCT = 0.24
 SPOT_MIN_TP_PCT = 0.2
 SPOT_MAX_TP_PCT = 0.32
 
-FUTURE_MIN_SL_PCT = 0.2
-FUTURE_MAX_SL_PCT = 0.21
-SPOT_MIN_SL_PCT = 0.2
-SPOT_MAX_SL_PCT = 0.21
+FUTURE_MIN_SL_PCT = 0.3
+FUTURE_MAX_SL_PCT = 0.41
+SPOT_MIN_SL_PCT = 0.3
+SPOT_MAX_SL_PCT = 0.41
 
-MAX_TP_TO_SHOT_RATIO = 0.61
+MAX_TP_TO_SHOT_RATIO = 0.51
 
 MIN_TP_COUNT_GROUPS_THRESHOLD = 1
 
-DEFAULT_MIN_STEP = 0.03
-TRIAL_STEP_PCT = 0.03
+SIMULATION_STEP_PCT = 0.05
+TRIAL_STEP_PCT = 0.05
 
-DEFAULT_BOUNCE_TO_SHOT_RATIO = 1/3
 CREATE_PNL_FILE_FLAG = True
 
 RATING_VALUE_DENOMINATOR = 100
@@ -215,15 +219,15 @@ class ShotsPnlCalculator(object):
         max_dist_pct = min(MAX_DISTANCE_PCT, max_s)
         min_tp_pct = FUTURE_MIN_TP_PCT if is_future else SPOT_MIN_TP_PCT
         max_tp_pct = FUTURE_MAX_TP_PCT if is_future else SPOT_MAX_TP_PCT
-        max_tp = max(max_tp_pct, max_s * DEFAULT_BOUNCE_TO_SHOT_RATIO)
+        max_tp = max(max_tp_pct, float(np.mean(shot_depth_list, axis=0, dtype=np.float64)))
         min_sl_pct = FUTURE_MIN_SL_PCT if is_future else SPOT_MIN_SL_PCT
         max_sl_pct = FUTURE_MAX_SL_PCT if is_future else SPOT_MAX_SL_PCT
 
         if is_moonbot:
-            price_min_val = np.arange(MIN_DISTANCE_PCT, max_dist_pct - 0.1 + DEFAULT_MIN_STEP, DEFAULT_MIN_STEP)
-            price_val = np.arange(MIN_DISTANCE_PCT, max_dist_pct + DEFAULT_MIN_STEP, DEFAULT_MIN_STEP)
-            tp_val = np.arange(min_tp_pct, max_tp, DEFAULT_MIN_STEP)
-            sl_val = np.arange(min_sl_pct, max_sl_pct, DEFAULT_MIN_STEP)
+            price_min_val = np.arange(MIN_DISTANCE_PCT, max_dist_pct - MB_MIN_ALLOWED_BUFFER_PCT + SIMULATION_STEP_PCT, SIMULATION_STEP_PCT)
+            price_val = np.arange(MIN_DISTANCE_PCT, max_dist_pct + SIMULATION_STEP_PCT, SIMULATION_STEP_PCT)
+            tp_val = np.arange(min_tp_pct, max_tp, SIMULATION_STEP_PCT)
+            sl_val = np.arange(min_sl_pct, max_sl_pct, SIMULATION_STEP_PCT)
             return {
                 "MShotPriceMin": price_min_val,
                 "MShotPrice": price_val,
@@ -231,10 +235,10 @@ class ShotsPnlCalculator(object):
                 "sl": sl_val
             }
         else:
-            dist_val = np.arange(MIN_DISTANCE_PCT, max_dist_pct + DEFAULT_MIN_STEP, DEFAULT_MIN_STEP)
+            dist_val = np.arange(MIN_DISTANCE_PCT, max_dist_pct + SIMULATION_STEP_PCT, SIMULATION_STEP_PCT)
             buffer_val = MIN_BUFFER_PCT
-            tp_val = np.arange(min_tp_pct, max_tp, DEFAULT_MIN_STEP)
-            sl_val = np.arange(min_sl_pct, max_sl_pct, DEFAULT_MIN_STEP)
+            tp_val = np.arange(min_tp_pct, max_tp, SIMULATION_STEP_PCT)
+            sl_val = np.arange(min_sl_pct, max_sl_pct, SIMULATION_STEP_PCT)
             return {
                 "distance": dist_val,
                 "buffer": buffer_val,
@@ -333,12 +337,15 @@ class ShotsPnlCalculator(object):
             for c_idx, c_dict in enumerate(combinations):
                 if c_idx % 100 == 0:
                     print("{}/{}".format(c_idx, len(combinations)))
+                #print(c_dict)
                 c_tp = c_dict["tp"]
                 c_sl = c_dict["sl"]
                 if is_moonbot:
                     c_mshot_price_min = c_dict["MShotPriceMin"]
                     c_mshot_price = c_dict["MShotPrice"]
-                    if c_mshot_price <= c_mshot_price_min:
+                    if (c_mshot_price - c_mshot_price_min) < MB_MIN_ALLOWED_BUFFER_PCT or \
+                       (c_mshot_price - c_mshot_price_min) > MB_MAX_ALLOWED_BUFFER_PCT:
+                        #print("Now should be skipping: c_mshot_price - c_mshot_price_min={}".format(c_mshot_price - c_mshot_price_min))
                         continue
                     if c_tp > (c_mshot_price * MAX_TP_TO_SHOT_RATIO):
                         continue

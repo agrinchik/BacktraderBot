@@ -424,6 +424,71 @@ class AppConfig(object):
                 "today": 15,
             }
         ],
+        BTStrategyEnum.MT001_MOONTRADER_AVERAGES_STRATEGY_ID: [
+            {
+                "exchange": "binance",
+                "currency_pair": "ETCUSDT",
+                "timeframe": "1000ms",
+                "startcash": 1500,
+                "lotsize": 1470,
+                "lottype": "Fixed",
+                "startyear": 2022,
+                "startmonth": 7,
+                "startday": 8,
+                "num_wfo_cycles": 1,
+                "wfo_training_period": 5,
+                "wfo_test_period": 1
+            },
+            {
+                "needlong": True,
+                "needshort": True,
+                "timeframe_ms": 1000,
+                "long_period": 30,  # (15, 30, 60, 180, 300),
+                "short_period": 3,  # (3, 5, 10),
+                "distance": 0.1,  # (0.2, 0.4, 0.6, 0.8, 1.0),
+                "exitmode": 1,
+                "sl": 0.5,  # (1, 2),
+                "tslflag": False,
+                "tp": 1,
+                "ttpdist": 0,
+                "tbdist": 0,
+                "numdca": 0,
+                "dcainterval": 0
+            }
+        ],
+        BTStrategyEnum.MB001_MOONBOT_VY_EMA_STRATEGY_ID: [
+            {
+                "exchange": "binance",
+                "currency_pair": "ETCUSDT",
+                "timeframe": "1m",
+                "startcash": 1500,
+                "lotsize": 1470,
+                "lottype": "Fixed",
+                "startyear": 2022,
+                "startmonth": 6,
+                "startday": 1,
+                "num_wfo_cycles": 1,
+                "wfo_training_period": 90,
+                "wfo_test_period": 1
+            },
+            {
+                "needlong": True,
+                "needshort": True,
+                "formula1time": 35,
+                "formula1pricedelta": -1.4,
+                "formula2pricedelta": 0.2,
+                "formula3pricedelta": 0.1,
+                "formula3time": 6 * 60,
+                "exitmode": 1,
+                "sl": 2.5,
+                "tslflag": False,
+                "tp": 1,
+                "ttpdist": 0,
+                "tbdist": 0,
+                "numdca": 0,
+                "dcainterval": 0
+            }
+        ],
     }
 
     _STEP1_STRATEGY_PARAMS_DICT = {
@@ -633,7 +698,40 @@ class AppConfig(object):
             "min_position": -1.5,
             "max_position": 1.5,
             "stop_quoting_if_inside_loss_range": True,
-        }
+        },
+        BTStrategyEnum.MT001_MOONTRADER_AVERAGES_STRATEGY_ID: {
+            "needlong": True,
+            "needshort": True,
+            "timeframe_ms": 1000,
+            "long_period": (15, 30, 60, 180, 300),
+            "short_period": (3, 5, 10),
+            "distance": (0.2, 0.4, 0.6, 0.8, 1.0),
+            "exitmode": 1,
+            "sl": 1,  #(1, 2),
+            "tslflag": False,
+            "tp": 1,
+            "ttpdist": 0,
+            "tbdist": 0,
+            "numdca": 0,
+            "dcainterval": 0
+        },
+        BTStrategyEnum.MB001_MOONBOT_VY_EMA_STRATEGY_ID: {
+            "needlong": True,
+            "needshort": True,
+            "formula1time": (25, 30, 35, 40),
+            "formula1pricedelta": (-1.4, -2, -3, -4, -5, -6),
+            "formula2pricedelta": (0.2, 0.4),
+            "formula3pricedelta": 0.1,
+            "formula3time": (3 * 60, 6 * 60, 8 * 60),
+            "exitmode": 1,
+            "sl": 2.5,  #(1, 2),
+            "tslflag": False,
+            "tp": 1,
+            "ttpdist": 0,
+            "tbdist": 0,
+            "numdca": 0,
+            "dcainterval": 0
+        },
     }
 
     @classmethod

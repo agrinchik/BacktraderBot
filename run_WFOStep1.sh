@@ -6,28 +6,28 @@ declare -a arr_num_days=("31" "28" "31" "30" "31" "30" "31" "31" "30" "31" "30" 
 
 runid=$1
 
-declare -a wfo_startdate="2021-06-05"
+declare -a wfo_startdate="2022-06-01"
 
 startyear=${wfo_startdate:0:4}
 startmonth=${wfo_startdate:5:2}
 startday=${wfo_startdate:8:2}
 
-wfo_training_period=7
-wfo_testing_period=3
-num_wfo_cycles=3
+wfo_training_period=90
+wfo_testing_period=1
+num_wfo_cycles=1
 
 #declare -a arr_strategies=("S001_AlexNoroTrendMAsStrategy" "S002_AlexNoroSILAStrategy" "S003_AlexNoroRobotBitMEXFastRSIStrategy" "S004_AlexNoroBandsScalperStrategy" "S005_AlexNoroTripleRSIStrategy" "S006_AlexNoroSqueezeMomentumStrategy" "S007_AlexNoroMultimaStrategy" "S008_AlexNoroSuperTrendStrategy" "S009_RSIMinMaxStrategy" "S010_AlexAroonTrendStrategy" "S011_EMACrossOverStrategy")
 #declare -a arr_strategies=("S001_AlexNoroTrendMAsStrategy" "S002_AlexNoroSILAStrategy" "S003_AlexNoroRobotBitMEXFastRSIStrategy" "S004_AlexNoroBandsScalperStrategy" "S005_AlexNoroTripleRSIStrategy" "S006_AlexNoroSqueezeMomentumStrategy" "S007_AlexNoroMultimaStrategy" "S008_AlexNoroSuperTrendStrategy" "S009_RSIMinMaxStrategy" "S010_AlexAroonTrendStrategy" "S011_EMACrossOverStrategy")
-declare -a arr_strategies=("S001_AlexNoroTrendMAsStrategy" "S002_AlexNoroSILAStrategy" "S003_AlexNoroRobotBitMEXFastRSIStrategy" "S009_RSIMinMaxStrategy" "S010_AlexAroonTrendStrategy" "S011_EMACrossOverStrategy")
+declare -a arr_strategies=("MB001_MoonBotVYEmaStrategy")
 
 #declare -a arr_symbols=("BTCUSD" "ETHUSD" "XRPUSD" "LTCUSD" "ETCUSD" "IOTAUSD" "EOSUSD" "NEOUSD" "ZECUSD" "ETPUSD" "XMRUSD" "DASHUSD")
-declare -a arr_symbols=("BTCUSDT" "MATICUSDT")
+declare -a arr_symbols=("ETCUSDT")
 
 #declare -a arr_timeframes=("15m" "30m" "1h" "3h" "6h" "12h")
 declare -a arr_timeframes=("1m")
 
-if [ -d "/opt/anaconda3" ]; then
-    source /opt/anaconda3/etc/profile.d/conda.sh
+if [ -d "/Users/alex/opt/anaconda3" ]; then
+    source /Users/alex/opt/anaconda3/etc/profile.d/conda.sh
 elif [ -d "/home/alex/anaconda3" ]; then
     source /home/alex/anaconda3/etc/profile.d/conda.sh
 elif [ -d "/Users/alex/anaconda3" ]; then

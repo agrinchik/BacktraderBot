@@ -30,11 +30,11 @@ IS_ADD_SMALL_RANDOM_VALUES_MODE = True
 SMALL_RANDOM_VALUE_PCT = 15
 
 FUTURE_MAX_STRATEGIES_NUM = 10
-SPOT_MAX_STRATEGIES_NUM = 6
+SPOT_MAX_STRATEGIES_NUM = 5
 
 MT_FUTURE_ORDER_SIZE = 50
 MT_SPOT_ORDER_SIZE = 11
-MB_ORDER_SIZE = 0.0002
+MB_ORDER_SIZE = 11
 
 IS_SKIP_SHORT_STRATEGY_MODE = False
 
@@ -44,9 +44,8 @@ FIXED_BUFFER_VALUE_PCT = 0.2
 FIXED_TP_VALUE_PCT = 0.5
 FIXED_SL_VALUE_PCT = 0.6
 
-DEFAULT_OUTPUT_MB_FILENAME = "Binance-BTC-strat.txt"
+DEFAULT_OUTPUT_MB_FILENAME = "Binance-BUSD-strat.txt"
 DEFAULT_OUTPUT_MT_FILENAME = "algorithms.config"
-
 
 class StrategyGeneratorHandler(object):
     def __init__(self):
@@ -156,16 +155,12 @@ class StrategyGeneratorHandler(object):
         else:
             return 2 * SPOT_BNB_FEE_PCT
 
-    def get_order_size(self, is_moonbot, is_future):
-        if is_moonbot:
-            order_size = MB_ORDER_SIZE
-        else:
-            order_size = MT_SPOT_ORDER_SIZE if not is_future else MT_FUTURE_ORDER_SIZE
-
+    def get_order_size(self, is_future):
+        order_size = MT_FUTURE_ORDER_SIZE if is_future else MT_SPOT_ORDER_SIZE
         return round(order_size)
 
-    def get_order_size_mode_1(self, is_moonbot, is_future):
-        order_size = self.get_order_size(is_moonbot, is_future)
+    def get_order_size_mode_1(self, is_future):
+        order_size = self.get_order_size(is_future)
 
         order_size = order_size / GRID_MODE_ORDER_NUM
         if IS_ADD_SMALL_RANDOM_VALUES_MODE:
@@ -174,8 +169,8 @@ class StrategyGeneratorHandler(object):
 
         return round(order_size)
 
-    def get_order_size_mode_2(self, is_moonbot, is_future, order_idx, tokens_vo_arr):
-        order_size1 = self.get_order_size(is_moonbot, is_future)
+    def get_order_size_mode_2(self, is_future, order_idx, tokens_vo_arr):
+        order_size1 = self.get_order_size(is_future)
 
         if order_idx == 0:
             return round(order_size1)
@@ -240,7 +235,7 @@ class StrategyGeneratorHandler(object):
                 for grid_order_idx in range(GRID_MODE_ORDER_NUM):
                     tokens_vo_adj = self.adjust_tokens_grid(is_moonbot, tokens_vo, grid_order_idx, GRID_MODE_1_DISTANCE_STEP_PCT)
                     is_last = idx == shots_pnl_data_df.index[-1] and grid_order_idx == GRID_MODE_ORDER_NUM - 1
-                    order_size = self.get_order_size_mode_1(is_moonbot, is_future)
+                    order_size = self.get_order_size_mode_1(is_future)
                     strategy_list.append(self._strategy_generator.generate_strategy(is_moonbot, is_future, strategy_template, tokens_vo_adj, order_size, is_last))
             if is_future and CURRENT_GRID_MODE == GRID_MODE_2:
                 max_real_shot_depth = pnl_row['max_real_shot_depth']
@@ -251,11 +246,11 @@ class StrategyGeneratorHandler(object):
                     tokens_vo_adj = self.adjust_tokens_grid(is_moonbot, tokens_vo, grid_order_idx, distance_step_pct)
                     token_vo_arr.append(tokens_vo_adj)
                     is_last = idx == shots_pnl_data_df.index[-1] and grid_order_idx == GRID_MODE_ORDER_NUM - 1
-                    order_size = self.get_order_size_mode_2(is_moonbot, is_future, grid_order_idx, token_vo_arr)
+                    order_size = self.get_order_size_mode_2(is_future, grid_order_idx, token_vo_arr)
                     strategy_list.append(self._strategy_generator.generate_strategy(is_moonbot, is_future, strategy_template, tokens_vo_adj, order_size, is_last))
             else:
                 is_last = idx == shots_pnl_data_df.index[-1]
-                order_size = self.get_order_size(is_moonbot, is_future)
+                order_size = self.get_order_size(is_future)
                 strategy_list.append(self._strategy_generator.generate_strategy(is_moonbot, is_future, strategy_template, tokens_vo, order_size, is_last))
         strategy_list_str = ''.join(strategy_list)
 

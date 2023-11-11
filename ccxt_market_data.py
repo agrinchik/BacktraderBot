@@ -31,6 +31,7 @@ import argparse
 import pandas as pd
 import time
 from calendar import timegm
+import pytz
 import pathlib
 import os
 
@@ -54,6 +55,15 @@ def parse_args():
                         choices=['1m', '5m','15m', '30m','1h', '2h', '3h', '4h', '6h', '12h', '1d', '1M', '1y'],
                         help='The timeframe to download')
 
+    parser.add_argument('-r', '--start',
+                        type=str,
+                        required=True,
+                        help='Start datetime')
+
+    parser.add_argument('-n', '--end',
+                        type=str,
+                        required=True,
+                        help='End datetime')
 
     parser.add_argument('--debug',
                             action ='store_true',
@@ -106,7 +116,7 @@ def whereAmI():
     return os.path.dirname(os.path.realpath(__import__("__main__").__file__))
 
 sym = args.symbol
-symbol_out = args.symbol.replace("/","")
+symbol_out = args.symbol.replace("/", "")
 dirname = whereAmI()
 output_path = '{}/marketdata/{}/{}/{}'.format(dirname, args.exchange, symbol_out, args.timeframe)
 os.makedirs(output_path, exist_ok=True)
@@ -114,9 +124,15 @@ os.makedirs(output_path, exist_ok=True)
 # Get data
 #    def fetch_ohlcv(self, symbol, timeframe='1m', since=None, limit=None, params={}):
 
-start_utc_time = time.strptime("2000-01-01T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")
-start = timegm(start_utc_time) * 1000
-end = time.time() * 1000
+gmt3_tz = pytz.timezone('Etc/GMT-2')
+start_utc_date = datetime.strptime(args.start, '%Y-%m-%dT%H:%M:%S')
+start_utc_date = gmt3_tz.localize(start_utc_date, is_dst=True)
+start = int(start_utc_date.timestamp()) * 1000
+
+end_utc_date = datetime.strptime(args.end, '%Y-%m-%dT%H:%M:%S')
+end_utc_date = gmt3_tz.localize(end_utc_date, is_dst=True)
+end = int(end_utc_date.timestamp()) * 1000
+
 limit = 1000
 timestamp = start
 last_timestamp = None
@@ -128,7 +144,7 @@ while timestamp <= end and timestamp != last_timestamp:
     last_timestamp = timestamp
     timestamp = trades[-1][0]
     data.extend(trades)
-    time.sleep(6)
+    time.sleep(0.1)
     if len(data) > 0 and len(trades) > 1:
         del data[-1] 
 

@@ -1,21 +1,32 @@
 #! /bin/bash
 
-declare -a excluded_symbols_regex="BTCUSDT BTCSTUSDT BNBUSDT ETHUSDT LTCUSDT XRPUSDT"
+if [ -d "/Users/alex/opt/anaconda3" ]; then
+    source /Users/alex/opt/anaconda3/etc/profile.d/conda.sh
+elif [ -d "/home/alex/anaconda3" ]; then
+    source /home/alex/anaconda3/etc/profile.d/conda.sh
+elif [ -d "/Users/alex/anaconda3" ]; then
+    source /Users/alex/anaconda3/etc/profile.d/conda.sh
+elif [ -d "/c/Anaconda3" ]; then
+    source /c/Anaconda3/etc/profile.d/conda.sh
+fi
+conda activate Backtrader
 
-python get_symbols.py -q ${1} -f
+declare -a excluded_symbols_regex="BTCUSDT BTCSTUSDT TUSDT"
+
+python get_symbols.py -q ${2} -f
 
 declare -a symbol_list
 while read line; do
     symbol_list+=($line)
-done < symbols_future_${1}.txt
+done < symbols_future_${2}.txt
 
-declare -a start_minutes_ago=$((12*60))
+declare -a start_minutes_ago=$(($1*60))
 
-declare -a ultrashortmode=${2}
+declare -a ultrashortmode=${3}
 
 declare -a future_flag="-f"
 
-declare -a moonbot_flag=""
+declare -a moonbot_flag="-b"
 
 now_timestamp="$(date +'%s')"
 now_timestamp=$((now_timestamp - now_timestamp % 60))
@@ -23,20 +34,11 @@ now_timestamp=$((now_timestamp - now_timestamp % 60))
 start_timestamp=$((now_timestamp - 60 * start_minutes_ago))
 start_date="$(date -j -f "%s" "${start_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 end_timestamp=$((start_timestamp + 60 * start_minutes_ago))
-end_date="$(date -j -f "%s" "${end_timestamp}" "+%Y-%m-%dT%0H:%M:%S")"
+end_date="$(date -j -f "%s" "${start_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 
 output_folder_prefix="$(date -j -f "%s" "${end_timestamp}" "+%Y%m%d_%H%M")"
-BASE_OUT_FOLDER=/Users/alex/Cloud@Mail.Ru/_TEMP/scalping/out/strategies
-output_folder="${BASE_OUT_FOLDER}/${output_folder_prefix}_Future_${start_minutes_ago}m/"
-
-if [ -d "/Users/alex/opt/anaconda3" ]; then
-    source /Users/alex/opt/anaconda3/etc/profile.d/conda.sh
-elif [ -d "/home/alex/anaconda3" ]; then
-    source /home/alex/anaconda3/etc/profile.d/conda.sh
-elif [ -d "/Users/alex/anaconda3" ]; then
-    source /Users/alex/anaconda3/etc/profile.d/conda.sh
-fi
-conda activate Backtrader
+BASE_OUT_FOLDER=../../../../../../../_TEMP/scalping/out/strategies
+output_folder=${BASE_OUT_FOLDER}/${output_folder_prefix}_Future_${start_minutes_ago}m/
 
 echo Deleting old data files...
 rm -rf ./../marketdata/shots/binance/future/*

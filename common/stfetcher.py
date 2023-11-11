@@ -3,7 +3,7 @@ class StFetcher(object):
 
     @classmethod
     def cleanall(cls, ):
-        cls._STRATS = []
+        pass
 
     @classmethod
     def register(cls, target, *args, **kwargs):

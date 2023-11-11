@@ -4,6 +4,7 @@ from pathlib import Path
 import random
 import uuid
 import io
+import string
 
 TOKEN001_STR = "{{TOKEN001}}"
 TOKEN002_STR = "{{TOKEN002}}"
@@ -81,17 +82,20 @@ class ShotStrategyGenerator(object):
         tp = tokens_vo.tp
         sl = tokens_vo.sl
         if is_moonbot:
+            coin_wl = symbol_name[:-4]
             extra_suffix = " {} ".format(extra_desc_info) if extra_desc_info else " "
             mshot_price_min = tokens_vo.mshot_price_min
             mshot_price = tokens_vo.mshot_price
+            fint_id = ''.join(random.choices(string.digits, k=18))
             return {
                 TOKEN001_STR: "Moonshot [{}]{}{} {} {}-{}-{}-{}".format(symbol_type_str, extra_suffix, symbol_name, shot_type, mshot_price_min, mshot_price, tp, sl),
-                TOKEN002_STR: symbol_name,
+                TOKEN002_STR: coin_wl,
                 TOKEN003_STR: "{:.4f}".format(tp),
-                TOKEN004_STR: "{:.8f}".format(sl),
+                TOKEN004_STR: "{:.8f}".format(-1 * sl),
                 TOKEN005_STR: "{:.4f}".format(mshot_price_min),
                 TOKEN006_STR: "{:.4f}".format(mshot_price),
-                TOKEN007_STR: "{}".format(order_size)
+                TOKEN007_STR: "{}".format(order_size),
+                TOKEN008_STR: "1{}".format(fint_id)
             }
         else:
             extra_suffix = " {} ".format(extra_desc_info) if extra_desc_info else " "

@@ -29,4 +29,13 @@ class Utils(object):
 
     @classmethod
     def get_granularity_by_tf_str(cls, tf_str):
-        return [key for (key, value) in cls._GRANULARITIES.items() if value == tf_str]
+        if "ms" in tf_str:
+            val = int(tf_str[0: -2])
+            if val < 1000:
+                return [(bt.TimeFrame.MicroSeconds, val * 1000)]
+            elif val == 1000:
+                return [(bt.TimeFrame.Seconds, 1)]
+            else:
+                raise "Wrong timeframe value: {}".format(val)
+        else:
+            return [key for (key, value) in cls._GRANULARITIES.items() if value == tf_str]

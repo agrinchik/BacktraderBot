@@ -13,8 +13,8 @@ PRESHOT_DEPTH_MIN_THRESHOLD_PCT = 0.1
 ALLOW_SHORT_SHOTS_FLAG = False
 
 SHOT_DEPTH_SPOT_MIN_THRESHOLD_PCT_US_MODE = 0.3
-SHOT_DEPTH_FUTURE_MIN_THRESHOLD_PCT_US_MODE = 0.2
-SHOT_DEPTH_MIN_THRESHOLD_PCT = 0.7
+SHOT_DEPTH_FUTURE_MIN_THRESHOLD_PCT_US_MODE = 0.3
+SHOT_DEPTH_MIN_THRESHOLD_PCT = 0.5
 
 SHOT_ROUNDING_PRECISION = 0.01
 
@@ -416,7 +416,7 @@ class ShotsDetector(object):
         if os.path.exists(filename):
             file_exists = True
 
-        ofile = open(filename, "a")
+        ofile = open(filename, mode="a", newline='')
         writer = csv.writer(ofile, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
 
         if not file_exists:
@@ -441,7 +441,7 @@ class ShotsDetector(object):
         print("\nProcessing {}: ... ".format(args.symbol))
 
         if args.moonbot:
-            SHOT_BOUNCE_LOOKUP_START = 1000
+            SHOT_BOUNCE_LOOKUP_START = 300
         else:
             SHOT_BOUNCE_LOOKUP_START = 300
 

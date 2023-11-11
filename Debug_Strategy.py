@@ -171,6 +171,12 @@ class DebugStrategy(object):
         # Add the data to Cerebro
         self._cerebro.adddata(data_tf, "data_{}".format(self._timeframe))
 
+    def get_datetime_format_string(self, timeframe):
+        if "ms" in timeframe:
+            return '%Y-%m-%dT%H:%M:%S.%f'
+        else:
+            return '%Y-%m-%dT%H:%M:%S'
+
     def build_data(self, fromdate, todate, timeframe):
         fromdate_back_delta = timedelta(days=50)  # Adjust from date to add more candle data from the past to strategy to prevent any calculation problems with indicators
         granularity = Utils.get_granularity_by_tf_str(timeframe)
@@ -187,7 +193,7 @@ class DebugStrategy(object):
             todate=todate_beyond,
             timeframe=timeframe_id,
             compression=compression,
-            dtformat="%Y-%m-%dT%H:%M:%S",
+            dtformat=self.get_datetime_format_string(timeframe),
             # nullvalue=0.0,
             datetime=0,
             open=1,
