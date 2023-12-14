@@ -9,6 +9,8 @@ import os
 from ccxt.base.errors import NetworkError, ExchangeError
 from functools import wraps
 
+CALCULATE_DELTAS = True
+
 USE_RELATIVE_DELTAS = True
 
 EXCHANGE_STR = "binance"
@@ -312,7 +314,7 @@ class BinanceTradeDataDownloader(object):
             print('-' * 80)
             quit()
 
-        symbol_out = instrument.replace("/","")
+        symbol_out = instrument.replace("/", "")
         dirname = self.whereAmI()
         output_path = self.get_tick_data_filepath(dirname, symbol_out, is_future)
         os.makedirs(output_path, exist_ok=True)
@@ -329,6 +331,7 @@ class BinanceTradeDataDownloader(object):
         timestamp = start
         last_timestamp = None
         data = []
+        tick_size = self.w_exchange.markets[instrument]['info']['filters'][0]['tickSize']
 
         print("\n********** Started at {} **********\n".format(datetime.now().strftime("%Y-%m-%dT%H:%M:%S")))
         print("Downloading {}...\n".format(symbol))
@@ -354,41 +357,58 @@ class BinanceTradeDataDownloader(object):
 
         print("Downloaded {} records!\n".format(len(data)))
 
-        header = ['ID', 'Timestamp', 'Trade ID', 'Datetime', 'Side', 'Price', 'Amount', 'isBuyerMaker', 'SMA{}'.format(SMA_1_LEN), 'SMA{}'.format(SMA_2_LEN), 'SMA{}'.format(SMA_3_LEN),
-                  'd{}m'.format(COIN_DELTA1_LEN), 'd{}m'.format(COIN_DELTA2_LEN), 'd{}m'.format(COIN_DELTA3_LEN), 'dBTC{}m'.format(BTC_DELTA1_LEN), 'dBTC{}m'.format(BTC_DELTA2_LEN), 'dBTC{}m'.format(BTC_DELTA3_LEN)]
+        if CALCULATE_DELTAS:
+            header = ['ID', 'Timestamp', 'Trade ID', 'Datetime', 'Side', 'Price', 'Amount', 'isBuyerMaker', 'SMA{}'.format(SMA_1_LEN), 'SMA{}'.format(SMA_2_LEN), 'SMA{}'.format(SMA_3_LEN),
+                      'd{}m'.format(COIN_DELTA1_LEN), 'd{}m'.format(COIN_DELTA2_LEN), 'd{}m'.format(COIN_DELTA3_LEN), 'dBTC{}m'.format(BTC_DELTA1_LEN), 'dBTC{}m'.format(BTC_DELTA2_LEN), 'dBTC{}m'.format(BTC_DELTA3_LEN),
+                      'Tick Size']
+        else:
+            header = ['ID', 'Timestamp', 'Trade ID', 'Datetime', 'Side', 'Price', 'Amount', 'isBuyerMaker', 'Tick Size']
         csv_rows = []
 
         for index, data_row in enumerate(data):
-            sma1 = self.sma(data, index, SMA_1_LEN)
-            sma2 = self.sma(data, index, SMA_2_LEN)
-            sma3 = self.sma(data, index, SMA_3_LEN)
+            if CALCULATE_DELTAS:
+                sma1 = self.sma(data, index, SMA_1_LEN)
+                sma2 = self.sma(data, index, SMA_2_LEN)
+                sma3 = self.sma(data, index, SMA_3_LEN)
 
-            d1 = self.get_instrument_delta(data, index, COIN_DELTA1_LEN)
-            d2 = self.get_instrument_delta(data, index, COIN_DELTA2_LEN)
-            d3 = self.get_instrument_delta(data, index, COIN_DELTA3_LEN)
+                d1 = self.get_instrument_delta(data, index, COIN_DELTA1_LEN)
+                d2 = self.get_instrument_delta(data, index, COIN_DELTA2_LEN)
+                d3 = self.get_instrument_delta(data, index, COIN_DELTA3_LEN)
 
-            btc_d1 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA1_LEN)
-            btc_d2 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA2_LEN)
-            btc_d3 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA3_LEN)
+                btc_d1 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA1_LEN)
+                btc_d2 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA2_LEN)
+                btc_d3 = self.get_btc_delta(data, index, btc_1m_ohlc_df, BTC_DELTA3_LEN)
 
-            csv_rows.append([   index,
-                                data_row["timestamp"],
-                                data_row["id"],
-                                "{}.{:03d}".format(datetime.fromtimestamp(int(data_row["timestamp"] / 1000)).strftime("%Y-%m-%dT%H:%M:%S"), data_row["timestamp"] % 1000),
-                                data_row["side"],
-                                self.fmt_float(data_row["price"]),
-                                self.fmt_float(data_row["amount"]),
-                                1 if data_row["info"]["m"] is True else 0,
-                                self.fmt_float(round(sma1, 8)),
-                                self.fmt_float(round(sma2, 8)),
-                                self.fmt_float(round(sma3, 8)),
-                                self.round_precision(d1,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(d2,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(d3,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(btc_d1,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(btc_d2,  DELTAS_ROUNDING_PRECISION),
-                                self.round_precision(btc_d3,  DELTAS_ROUNDING_PRECISION),
-                             ])
+                csv_rows.append([   index,
+                                    data_row["timestamp"],
+                                    data_row["id"],
+                                    "{}.{:03d}".format(datetime.fromtimestamp(int(data_row["timestamp"] / 1000)).strftime("%Y-%m-%dT%H:%M:%S"), data_row["timestamp"] % 1000),
+                                    data_row["side"],
+                                    self.fmt_float(data_row["price"]),
+                                    self.fmt_float(data_row["amount"]),
+                                    1 if data_row["info"]["m"] is True else 0,
+                                    self.fmt_float(round(sma1, 8)),
+                                    self.fmt_float(round(sma2, 8)),
+                                    self.fmt_float(round(sma3, 8)),
+                                    self.round_precision(d1,  DELTAS_ROUNDING_PRECISION),
+                                    self.round_precision(d2,  DELTAS_ROUNDING_PRECISION),
+                                    self.round_precision(d3,  DELTAS_ROUNDING_PRECISION),
+                                    self.round_precision(btc_d1,  DELTAS_ROUNDING_PRECISION),
+                                    self.round_precision(btc_d2,  DELTAS_ROUNDING_PRECISION),
+                                    self.round_precision(btc_d3,  DELTAS_ROUNDING_PRECISION),
+                                    tick_size
+                                 ])
+            else:
+                csv_rows.append([   index,
+                                    data_row["timestamp"],
+                                    data_row["id"],
+                                    "{}.{:03d}".format(datetime.fromtimestamp(int(data_row["timestamp"] / 1000)).strftime("%Y-%m-%dT%H:%M:%S"), data_row["timestamp"] % 1000),
+                                    data_row["side"],
+                                    self.fmt_float(data_row["price"]),
+                                    self.fmt_float(data_row["amount"]),
+                                    1 if data_row["info"]["m"] is True else 0,
+                                    tick_size
+                                 ])
 
         # Save it
         filename = self.get_tick_data_filename(output_path, symbol_out)

@@ -35,7 +35,7 @@ now_timestamp=$((now_timestamp - now_timestamp % 60))
 start_timestamp=$((now_timestamp - 60 * start_minutes_ago))
 start_date="$(date -j -f "%s" "${start_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 end_timestamp=$((start_timestamp + 60 * start_minutes_ago))
-end_date="$(date -j -f "%s" "${start_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
+end_date="$(date -j -f "%s" "${end_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 
 output_folder_prefix="$(date -j -f "%s" "${end_timestamp}" "+%Y%m%d_%H%M")"
 BASE_OUT_FOLDER=../../../../../../../_TEMP/scalping/out/strategies

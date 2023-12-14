@@ -25,15 +25,15 @@ SOFTWARE.
 '''
 
 import ccxt
-from datetime import datetime, timedelta, timezone
-import math
+from datetime import datetime
 import argparse
 import pandas as pd
 import time
-from calendar import timegm
 import pytz
-import pathlib
 import os
+
+FUTURE_SYMBOL_INFO_URL = "https://fapi.binance.com/fapi/v1/exchangeInfo"
+SPOT_SYMBOL_INFO_URL = "https://api.binance.com/api/v1/exchangeInfo"
 
 def parse_args():
     parser = argparse.ArgumentParser(description='CCXT Market Data Downloader')
@@ -148,10 +148,13 @@ while timestamp <= end and timestamp != last_timestamp:
     if len(data) > 0 and len(trades) > 1:
         del data[-1] 
 
+tick_size = exchange.markets[args.symbol]['info']['filters'][0]['tickSize']
+
 for t in data:
     t[0] = datetime.fromtimestamp(int(t[0] / 1000)).strftime("%Y-%m-%dT%H:%M:%S")
+    t.append(tick_size)
 
-header = ['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume']
+header = ['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume', 'Tick Size']
 df = pd.DataFrame(data, columns=header).set_index('Timestamp')
 # Save it
 filename = '{}/{}-{}-{}.csv'.format(output_path, args.exchange, symbol_out,args.timeframe)

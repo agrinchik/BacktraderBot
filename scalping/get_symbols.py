@@ -69,6 +69,7 @@ class GetSymbols(object):
         lev_string_down = "DOWN{}".format(quoteasset)
         lev_string_up = "UP{}".format(quoteasset)
         symbol_list = [s["symbol"] for s in json["symbols"] if s["status"] == "TRADING" and s["quoteAsset"] == quoteasset and not lev_string_down in s["symbol"] and not lev_string_up in s["symbol"]]
+        ttt_list = [s for s in json["symbols"] if s["symbol"] == "BTCUSDT"]
         symbol_list.sort()
 
         volume_info_dict = self.get_volume_info(args)

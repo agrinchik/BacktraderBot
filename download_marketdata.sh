@@ -14,16 +14,18 @@ declare exchange="binance"
 #declare -a arr_symbols=( "BTC/USD" "ETH/USD" "LTC/USD" "XRP/USD" "ETC/USD" "IOTA/USD" "EOS/USD" "NEO/USD" "ZEC/USD" "ETP/USD" "XMR/USD"  "DASH/USD")
 #declare -a arr_symbols=("OP/USDT" "LPT/USDT" "TRB/USDT" "RLC/USDT" "PEOPLE/USDT" "ROSE/USDT" "FLOW/USDT" "UNFI/USDT" "GAL/USDT" "BLZ/USDT")
 #declare -a arr_symbols=("XRP/BUSD")
-declare -a arr_symbols=("DOGE/BUSD")
+declare -a arr_symbols=("VIB/USDT")
 
 #declare -a arr_timeframes=("1m" "5m" "15m" "30m" "1h" "3h" "6h" "12h" "1d")
 declare -a arr_timeframes=("1m")
 
 declare -a start_days_ago=$(($1))
+declare -a end_days_ago=$(($2))
 now_timestamp="$(date +'%s')"
 start_timestamp=$((now_timestamp - (now_timestamp % (3600 * 24)) - 3600 * 24 * start_days_ago))
+end_timestamp=$((now_timestamp - 3600 * 24 * end_days_ago))
 start_date="$(date -j -f "%s" "${start_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
-end_date="$(date -j -f "%s" "${now_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
+end_date="$(date -j -f "%s" "${end_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 
 echo start_date=$start_date
 echo end_date=$end_date
