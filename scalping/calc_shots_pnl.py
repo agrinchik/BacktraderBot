@@ -17,12 +17,12 @@ WORKING_MODE = WORKING_MODE_BEST_PNL_SIMULATION
 MIN_TOTAL_SHOTS_COUNT = 1
 SS_FILTER_MIN_SHOTS_COUNT = 0
 
-ALLOW_SHORT_SHOTS_FLAG = True
+ALLOW_SHORT_SHOTS_FLAG = False
 
-#SPOT_MAKER_FEE_PCT = 0.075
-#SPOT_TAKER_FEE_PCT = 0.075
-SPOT_MAKER_FEE_PCT = 0.02  # BUSD
-SPOT_TAKER_FEE_PCT = 0.02  # BUSD
+SPOT_MAKER_FEE_PCT = 0.075
+SPOT_TAKER_FEE_PCT = 0.075
+# SPOT_MAKER_FEE_PCT = 0.02  # BUSD
+# SPOT_TAKER_FEE_PCT = 0.02  # BUSD
 SPOT_FEES_PCT = SPOT_MAKER_FEE_PCT + SPOT_TAKER_FEE_PCT
 FUTURE_MAKER_FEE_PCT = 0.02
 FUTURE_TAKER_FEE_PCT = 0.04
@@ -510,11 +510,10 @@ class ShotsPnlCalculator(object):
 
         if args.future:
             self.process_data(args, "LONG")
-            self.process_data(args, "SHORT")
-        else:
-            self.process_data(args, "LONG")
             if ALLOW_SHORT_SHOTS_FLAG:
                 self.process_data(args, "SHORT")
+        else:
+            self.process_data(args, "LONG")
 
         self.sort_best_pnl_file_rows(args)
 
