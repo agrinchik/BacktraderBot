@@ -113,7 +113,7 @@
    SessionResetTime=0
    AutoBuy=YES
    BuyDelay=0
-   Short=NO
+   Short={{TOKEN009}}
    HFT=180
    MaxActiveOrders=60
    MaxOrdersPerMarket=1

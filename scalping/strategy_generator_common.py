@@ -87,6 +87,7 @@ class ShotStrategyGenerator(object):
             mshot_price_min = tokens_vo.mshot_price_min
             mshot_price = tokens_vo.mshot_price
             fint_id = ''.join(random.choices(string.digits, k=18))
+            is_short_side = "NO" if shot_type == "LONG" else "YES" if shot_type == "SHORT" else "NO"
             return {
                 TOKEN001_STR: "Moonshot [{}]{}{} {} {}-{}-{}-{}".format(symbol_type_str, extra_suffix, symbol_name, shot_type, mshot_price_min, mshot_price, tp, sl),
                 TOKEN002_STR: coin_wl,
@@ -95,7 +96,8 @@ class ShotStrategyGenerator(object):
                 TOKEN005_STR: "{:.4f}".format(mshot_price_min),
                 TOKEN006_STR: "{:.4f}".format(mshot_price),
                 TOKEN007_STR: "{}".format(order_size),
-                TOKEN008_STR: "1{}".format(fint_id)
+                TOKEN008_STR: "1{}".format(fint_id),
+                TOKEN009_STR: "{}".format(is_short_side),
             }
         else:
             extra_suffix = " {} ".format(extra_desc_info) if extra_desc_info else " "

@@ -37,7 +37,7 @@ end_timestamp=$((start_timestamp + 60 * start_minutes_ago))
 end_date="$(date -j -f "%s" "${end_timestamp}" "+%Y-%m-%dT%H:%M:%S")"
 
 output_folder_prefix="$(date -j -f "%s" "${end_timestamp}" "+%Y%m%d_%H%M")"
-BASE_OUT_FOLDER=../../../../../../../_TEMP/scalping/out/strategies
+BASE_OUT_FOLDER=/Users/alex/Cloud@Mail.Ru/_TEMP/scalping/out/strategies
 output_folder=${BASE_OUT_FOLDER}/${output_folder_prefix}_Future_${start_minutes_ago}m/
 
 echo Deleting old data files...
@@ -73,4 +73,4 @@ cd scalping
 
 mkdir $output_folder
 cp ./../marketdata/shots/binance/future/* $output_folder
-cp ./../marketdata/shots/binance/future/algorithms.config_future $output_folder/../
+#cp ./../marketdata/shots/binance/future/algorithms.config_future $output_folder/../

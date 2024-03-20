@@ -17,7 +17,7 @@ WORKING_MODE = WORKING_MODE_BEST_PNL_SIMULATION
 MIN_TOTAL_SHOTS_COUNT = 1
 SS_FILTER_MIN_SHOTS_COUNT = 0
 
-ALLOW_SHORT_SHOTS_FLAG = False
+ALLOW_SHORT_SHOTS_FLAG = True
 
 SPOT_MAKER_FEE_PCT = 0.075
 SPOT_TAKER_FEE_PCT = 0.075
@@ -39,7 +39,7 @@ MIN_BUFFER_PCT = 0.3
 MAX_BUFFER_PCT = 0.8
 
 MB_MIN_ALLOWED_BUFFER_PCT = 0.3
-MB_MAX_ALLOWED_BUFFER_PCT = 0.8
+MB_MAX_ALLOWED_BUFFER_PCT = 0.4
 
 FUTURE_MIN_TP_PCT = 0.12
 FUTURE_MAX_TP_PCT = 0.24
@@ -280,14 +280,14 @@ class ShotsPnlCalculator(object):
         fees_pct = FUTURE_FEES_PCT if is_future else SPOT_FEES_PCT
 
         if is_moonbot:
-            trials_range = np.arange(0, (second_param - first_param) + 0.01, TRIAL_STEP_PCT)
+            trials_range = np.arange(0, 2 * (second_param - first_param) + 0.01, TRIAL_STEP_PCT)
         else:
             trials_range = np.arange(0, second_param + TRIAL_STEP_PCT, TRIAL_STEP_PCT)
 
         for trd in trials_range:
             trial_analyzer.shot_trials_count += 1
             if is_moonbot:
-                shot_trial_start = second_param - trd
+                shot_trial_start = second_param + (second_param - first_param) - trd
             else:
                 shot_trial_start = first_param + second_param / 2 - trd
             shot_trial_end = shot_trial_start - shot_depth

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-BASE_OUT_FOLDER=../../../../../../../_TEMP/scalping/out/strategies
+BASE_OUT_FOLDER=/Users/alex/Cloud@Mail.Ru/_TEMP/scalping/out/strategies
 FILE1=$BASE_OUT_FOLDER/algorithms.config_future
 FILE2=$BASE_OUT_FOLDER/algorithms.config_spot
 OUTFILE=$BASE_OUT_FOLDER/algorithms.config_future_spot
