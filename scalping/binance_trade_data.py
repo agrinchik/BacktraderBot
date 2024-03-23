@@ -319,7 +319,7 @@ class BinanceTradeDataDownloader(object):
         output_path = self.get_tick_data_filepath(dirname, symbol_out, is_future)
         os.makedirs(output_path, exist_ok=True)
 
-        gmt3_tz = pytz.timezone('Etc/GMT-3')
+        gmt3_tz = pytz.timezone('Etc/GMT-2')
         start_utc_date = datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
         start_utc_date = gmt3_tz.localize(start_utc_date, is_dst=True)
         start = int(start_utc_date.timestamp()) * 1000
@@ -339,7 +339,7 @@ class BinanceTradeDataDownloader(object):
         btc_1m_ohlc_df = self.get_btc_ohlcv_data(start, end)
 
         while timestamp <= end and timestamp != last_timestamp:
-            print("Requesting {} {}: {} GMT+03:00".format("Future" if is_future else "Spot", symbol_out, datetime.fromtimestamp(int(timestamp/1000)).strftime("%Y-%m-%dT%H:%M:%S")))
+            print("Requesting {} {}: {} GMT+02:00".format("Future" if is_future else "Spot", symbol_out, datetime.fromtimestamp(int(timestamp/1000)).strftime("%Y-%m-%dT%H:%M:%S")))
             options = {'startTime': timestamp, 'limit': API_LIMIT}
             if not is_future:
                 options = {'startTime': timestamp, 'endTime': timestamp + 3600000}
