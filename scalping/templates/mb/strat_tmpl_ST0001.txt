@@ -181,7 +181,7 @@
    UseSignalStops=NO
    UseStopLoss=YES
    StopLossEMA=3
-   StopLossDelay=2
+   StopLossDelay=1
    StopLoss={{TOKEN004}}
    StopLossSpread=2.000
    StopSpreadAdd1mDelta=0.010000
@@ -250,7 +250,7 @@
    MShotAddPriceBug=0.1000
    MShotSellAtLastPrice=YES
    MShotSellPriceAdjust=20.00
-   MShotReplaceDelay=1.0000
+   MShotReplaceDelay=0
    MShotRaiseWait=3.000
    MShotSortBy=Last15mDelta
    MShotUsePrice=BID
