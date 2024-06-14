@@ -76,6 +76,7 @@ class GetSymbols(object):
         symbol_list = [s for s in symbol_list if volume_info_dict[s] > filter_val]
 
         symbol_list_str = "\n".join(symbol_list)
+        symbol_list_str += "\n"
         print("Retrieved {} latest Binance {} instruments.".format(len(symbol_list), quoteasset))
         self.write_file(filename, symbol_list_str)
 

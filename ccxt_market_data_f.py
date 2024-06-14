@@ -140,12 +140,12 @@ data = []
 
 while timestamp <= end and timestamp != last_timestamp:
     print("Requesting " + datetime.fromtimestamp(int(timestamp/1000)).strftime("%Y-%m-%dT%H:%M:%S"))
-    trades = w_exchange.fetch_ohlcv(args.symbol, args.timeframe, timestamp, limit)
+    candles = w_exchange.fetch_ohlcv(args.symbol, args.timeframe, timestamp, limit)
     last_timestamp = timestamp
-    timestamp = trades[-1][0]
-    data.extend(trades)
+    timestamp = candles[-1][0]
+    data.extend(candles)
     time.sleep(0.1)
-    if len(data) > 0 and len(trades) > 1:
+    if len(data) > 0 and len(candles) > 1:
         del data[-1]
 
 tick_size = w_exchange.markets[args.symbol]['info']['filters'][0]['tickSize']
